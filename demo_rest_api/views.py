@@ -8,12 +8,12 @@ from rest_framework import status
 import uuid
 
 # Simulación de base de datos local en memoria
-data_list = []
-
-# Añadiendo algunos datos de ejemplo para probar el GET
-data_list.append({'id': str(uuid.uuid4()), 'name': 'User01', 'email': 'user01@example.com', 'is_active': True})
-data_list.append({'id': str(uuid.uuid4()), 'name': 'User02', 'email': 'user02@example.com', 'is_active': True})
-data_list.append({'id': str(uuid.uuid4()), 'name': 'User03', 'email': 'user03@example.com', 'is_active': False}) # Ejemplo de item inactivo
+# Usamos el mismo arreglo para GET/POST y para PUT/PATCH/DELETE.
+data_list = [
+    {'id': '1', 'name': 'Elemento Uno', 'email': 'user01@example.com', 'is_active': True},
+    {'id': '2', 'name': 'Elemento Dos', 'email': 'user02@example.com', 'is_active': True},
+    {'id': '3', 'name': 'Elemento Tres', 'email': 'user03@example.com', 'is_active': False},
+]
 
 class DemoRestApi(APIView):
     name = "Demo REST API"
@@ -39,12 +39,6 @@ class DemoRestApi(APIView):
         return Response({'message': 'Dato guardado exitosamente.', 'data': data}, status=status.HTTP_201_CREATED)
 
 
-ITEMS_ARRAY = [
-    {"id": "1", "nombre": "Elemento Uno", "categoria": "A", "activo": True},
-    {"id": "2", "nombre": "Elemento Dos", "categoria": "B", "activo": True},
-]
-
-
 class DemoRestApiItem(APIView):
 
     # --- MÉTODO PUT (Reemplazo Completo) ---
@@ -65,19 +59,16 @@ class DemoRestApiItem(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Buscar el elemento activo en el arreglo
-        for item in ITEMS_ARRAY:
-            if item['id'] == id and item.get('activo', True):
-                # Limpiar los datos viejos para hacer un reemplazo completo
+        # Buscar el elemento activo en la lista compartida
+        for item in data_list:
+            if item['id'] == id and item.get('is_active', False):
                 item.clear()
-                
-                # Mantener obligatoriamente el identificador y el estado activo
+
                 item['id'] = id
-                item['activo'] = True
-                
-                # Vaciar el resto de campos nuevos enviados en el cuerpo
+                item['is_active'] = True
+
                 for key, value in data.items():
-                    if key != 'activo':  # Evitar que alteren el borrado lógico desde afuera
+                    if key != 'is_active':
                         item[key] = value
 
                 return Response(
@@ -95,12 +86,12 @@ class DemoRestApiItem(APIView):
     def patch(self, request, id):
         data = request.data
 
-        # Buscar el elemento activo en el arreglo
-        for item in ITEMS_ARRAY:
-            if item['id'] == id and item.get('activo', True):
+        # Buscar el elemento activo en la lista compartida
+        for item in data_list:
+            if item['id'] == id and item.get('is_active', False):
                 # Actualizar solo los campos recibidos, manteniendo los no modificados
                 for key, value in data.items():
-                    if key != 'id' and key != 'activo':  # Proteger el ID y el estado de borrado
+                    if key != 'id' and key != 'is_active':
                         item[key] = value
                         
                 return Response(
@@ -115,11 +106,10 @@ class DemoRestApiItem(APIView):
 
     # --- MÉTODO DELETE (Eliminación Lógica) ---
     def delete(self, request, id):
-        # Buscar el elemento activo en el arreglo
-        for item in ITEMS_ARRAY:
-            if item['id'] == id and item.get('activo', True):
-                # Aplicar eliminación lógica cambiando la bandera a False
-                item['activo'] = False
+        # Buscar el elemento activo en la lista compartida
+        for item in data_list:
+            if item['id'] == id and item.get('is_active', False):
+                item['is_active'] = False
                 return Response(
                     {"mensaje": f"Elemento con identificador {id} eliminado lógicamente de forma exitosa."}, 
                     status=status.HTTP_200_OK
