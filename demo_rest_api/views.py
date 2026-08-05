@@ -9,11 +9,24 @@ import uuid
 
 # Simulación de base de datos local en memoria
 # Usamos el mismo arreglo para GET/POST y para PUT/PATCH/DELETE.
-data_list = [
-    {'id': '1', 'name': 'Elemento Uno', 'email': 'user01@example.com', 'is_active': True},
-    {'id': '2', 'name': 'Elemento Dos', 'email': 'user02@example.com', 'is_active': True},
-    {'id': '3', 'name': 'Elemento Tres', 'email': 'user03@example.com', 'is_active': False},
+data_list = []
+
+# Esta forma es más dinámica porque permite cargar datos desde una lista de ejemplo
+# y agregar cada elemento con append. Es útil cuando luego quieras reutilizar este
+# patrón para muchos datos o para leerlos desde un archivo o una API.
+sample_data = [
+    {'name': 'Elemento Uno', 'email': 'user01@example.com', 'is_active': True},
+    {'name': 'Elemento Dos', 'email': 'user02@example.com', 'is_active': True},
+    {'name': 'Elemento Tres', 'email': 'user03@example.com', 'is_active': False},
 ]
+
+for item in sample_data:
+    data_list.append({
+        'id': str(uuid.uuid4()),
+        'name': item['name'],
+        'email': item['email'],
+        'is_active': item['is_active'],
+    })
 
 class DemoRestApi(APIView):
     name = "Demo REST API"
